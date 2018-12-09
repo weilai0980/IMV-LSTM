@@ -8,7 +8,7 @@ from tensorflow.python.ops import rnn_cell_impl
 from tensorflow.python.ops.rnn_cell_impl import *
 
 # local 
-from custom_rnn_cell import *
+from mv_rnn_cell import *
 from utils_libs import *
 
 
@@ -28,12 +28,12 @@ def multi_mv_dense( num_layers, keep_prob, h_vari, dim_vari, scope, num_vari, \
         with tf.variable_scope(scope+str(i)):
             
             # ? dropout
-            h_mv_input = tf.nn.dropout(h_mv_input, tf.gather(keep_prob, 0))
+            h_mv_input = tf.nn.dropout(h_mv_input, keep_prob)
             # h_mv [V B d]
             # ? max norm constrains
             h_mv_input, tmp_regu_dense = mv_dense(h_mv_input, \
                                                   in_dim_vari,\
-                                                  scope+str(i),\
+                                                  scope + str(i),\
                                                   num_vari, \
                                                   out_dim_vari,\
                                                   False, max_norm_regul, regul_type)
@@ -61,7 +61,9 @@ def mv_dense( h_vari, dim_vari, scope, num_vari, dim_to, bool_no_activation, max
         # [V B D 1]
         h_expand = tf.expand_dims(h_vari, -1)
         
+        # max-norm regularization 
         if max_norm_regul > 0:
+            
             clipped = tf.clip_by_norm(w, clip_norm = max_norm_regul, axes = 2)
             clip_w = tf.assign(w, clipped)
             
@@ -76,7 +78,8 @@ def mv_dense( h_vari, dim_vari, scope, num_vari, dim_to, bool_no_activation, max
             h = tmp_h
         else:
             h = tf.nn.relu( tmp_h ) 
-            
+        
+        # regularization type
         if regul_type == 'l2':
             return h, tf.nn.l2_loss(w) 
         
@@ -245,7 +248,7 @@ def plain_dense(x, x_dim, dim_layers, scope, dropout_keep_prob, max_norm_regul):
                 regularization = tf.nn.l2_loss(w)
                 #regularization = tf.reduce_sum(tf.abs(w))
                 
-        #dropout
+        # dropout
         h = tf.nn.dropout(h, dropout_keep_prob)
         
         for i in range(1, len(dim_layers)):
@@ -275,7 +278,7 @@ def plain_dense(x, x_dim, dim_layers, scope, dropout_keep_prob, max_norm_regul):
 
 def plain_dense_leaky(x, x_dim, dim_layers, scope, dropout_keep_prob, alpha):
     
-        #dropout
+        # dropout
         x = tf.nn.dropout(x, dropout_keep_prob)
         
         with tf.variable_scope(scope):
@@ -293,8 +296,8 @@ def plain_dense_leaky(x, x_dim, dim_layers, scope, dropout_keep_prob, alpha):
                 regularization = tf.nn.l2_loss(w)
                 #regularization = tf.reduce_sum(tf.abs(w))
                 
-        #dropout
-        #h = tf.nn.dropout(h, dropout_keep_prob)
+        # dropout
+        # h = tf.nn.dropout(h, dropout_keep_prob)
         
         for i in range(1, len(dim_layers)):
             
@@ -327,7 +330,7 @@ def multi_dense(x, x_dim, num_layers, scope, dropout_keep_prob, max_norm_regul):
             
             with tf.variable_scope(scope+str(i)):
                 
-                #dropout
+                # dropout
                 h = tf.nn.dropout(h, dropout_keep_prob)
                 
                 w = tf.get_variable('w', [ in_dim, out_dim ], dtype=tf.float32,\
@@ -348,7 +351,7 @@ def multi_dense(x, x_dim, num_layers, scope, dropout_keep_prob, max_norm_regul):
                 
                 #?
                 regularization += tf.nn.l2_loss(w)
-                #regularization += tf.reduce_sum(tf.abs(w))
+                # regularization += tf.reduce_sum(tf.abs(w))
                 
                 in_dim = out_dim
                 out_dim = int(out_dim/2)
