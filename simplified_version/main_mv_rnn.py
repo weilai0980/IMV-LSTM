@@ -55,6 +55,10 @@ import json
 with open('config_data.json') as f:
     file_dict = json.load(f)
     
+    
+path_result = "../../ts_results/"
+path_hyper_para =  "../../ts_results/hyper_para/"
+path_model = "../../ts_results/model/"
 
 # ------ load data ------
 
@@ -75,10 +79,6 @@ para_input_dim = np.shape(xtrain)[-1]
 para_win_size = np.shape(xtrain)[1]
 
 print(" --- Data shapes: ", np.shape(xtrain), np.shape(ytrain), np.shape(xval), np.shape(yval))
-
-path_result = "../../ts_results/"
-path_hyper_para =  "../../ts_results/hyper_para/"
-path_model = "../../ts_results/model/"
 
 
 # ------ hyperparameter set-up ------
@@ -123,13 +123,17 @@ para_ke_type = 'aggre_posterior'
 # base_posterior, base_prior
 
 # epoch sample
-para_val_epoch_num = max(1, int(0.05 * para_n_epoch)) # how many epoch results to average
-para_test_epoch_num = 1 # how many epoch model snapshot to store for use in testing
+para_val_epoch_num = max(1, int(0.05 * para_n_epoch)) # how many epoch results to average in validation
+para_test_epoch_num = 1 # how many epoch model snapshots to store for use in testing
 
 
 # ------ utility functions ------
 
-def train_nn(num_dense, l2_dense, dropout_keep_prob, log_file, epoch_set):
+def train_nn(num_dense, 
+             l2_dense, 
+             dropout_keep_prob, 
+             log_file, 
+             epoch_set):
     
     # log: epoch errors
     with open(log_file, "a") as text_file:
@@ -242,8 +246,6 @@ def train_nn(num_dense, l2_dense, dropout_keep_prob, log_file, epoch_set):
         
         # epoch training and validation errors
         epoch_error = []
-        epoch_ke = []
-        epoch_att = []
         
         # training time counter 
         st_time = time.time()
@@ -268,22 +270,21 @@ def train_nn(num_dense, l2_dense, dropout_keep_prob, log_file, epoch_set):
                 batch_x = xtrain[ batch_idx ]
                 batch_y = ytrain[ batch_idx ]
                 
-                if method_str == 'mv_full' or method_str == 'mv_tensor':
+                # learning rate decay
+                if para_lr_decay == True and iter_per_epoch*epoch != 0 and (i + iter_per_epoch*epoch)%para_lr_decay_iter == 0:
                     
-                    # learning rate decay
-                    if para_lr_decay == True and iter_per_epoch*epoch!=0 and (i + iter_per_epoch*epoch)%para_lr_decay_iter == 0:
-                        
-                        tmp_loss, tmp_err = reg.train_batch(batch_x,
-                                                            batch_y,
-                                                            dropout_keep_prob,
-                                                            True,
-                                                            para_lr_mv*(0.96)**((i + iter_per_epoch*epoch)/para_lr_decay_iter))
-                    else:
-                        tmp_loss, tmp_err = reg.train_batch(batch_x,
-                                                            batch_y,
-                                                            dropout_keep_prob,
-                                                            False,
-                                                            0.0)
+                    tmp_loss, tmp_err = reg.train_batch(batch_x,
+                                                        batch_y,
+                                                        dropout_keep_prob,
+                                                        True,
+                                                        para_lr_mv*(0.96)**((i + iter_per_epoch*epoch)/para_lr_decay_iter))
+                
+                else:
+                    tmp_loss, tmp_err = reg.train_batch(batch_x,
+                                                        batch_y,
+                                                        dropout_keep_prob,
+                                                        False,
+                                                        0.0)
                 
                 loss_epoch += tmp_loss
                 err_sum_epoch += tmp_err
@@ -293,13 +294,11 @@ def train_nn(num_dense, l2_dense, dropout_keep_prob, log_file, epoch_set):
             # [self.y_hat, self.rmse, self.mae, self.mape]
             # [B V T-1], [B V]
             # dropout probability set to 1.0
-            yh, rmse_epoch, mae_epoch, mape_epoch, vari_impt = reg.inference(xval, 
-                                                                             yval, 
-                                                                             1.0)
+            yh, rmse_epoch, mae_epoch, mape_epoch = reg.inference(xval, 
+                                                                  yval, 
+                                                                  1.0)
             
             ed_time_epoch = time.time()
-            
-            # -- 
             
             # epoch, loss, train rmse, vali. rmse, vali. mae, vali. mape
             epoch_error.append([epoch,
@@ -308,7 +307,8 @@ def train_nn(num_dense, l2_dense, dropout_keep_prob, log_file, epoch_set):
                                 rmse_epoch,
                                 mae_epoch,
                                 mape_epoch])
-            # epoch-wise 
+            
+            
             print("\n --- At epoch %d : \n    %s, %d "%(epoch, str(epoch_error[-1][1:]), ed_time_epoch - st_time_epoch))
             
             with open(log_file, "a") as text_file:
@@ -319,6 +319,7 @@ def train_nn(num_dense, l2_dense, dropout_keep_prob, log_file, epoch_set):
                 
                 saver.save(sess, path_model + method_str + '-' + str(epoch))
                 print("    [MODEL SAVED] \n")
+                
                 
         ed_time = time.time()
         

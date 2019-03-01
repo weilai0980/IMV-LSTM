@@ -493,7 +493,7 @@ class tsLSTM_mv():
                     h = tf.nn.dropout(h, self.keep_prob)
                 
                 # [B 1]
-                h_mean, regu_dense_mean = dense(x = h,
+                h_mean, self.regu_dense_mean = dense(x = h,
                                                 x_dim = out_dim, 
                                                 out_dim = 1,
                                                 scope = "output_mean",
@@ -502,7 +502,7 @@ class tsLSTM_mv():
                                                 activation_type = "")
                 
                 # [B 1]
-                h_var, regu_dense_var = dense(x = h,
+                h_var, self.regu_dense_var = dense(x = h,
                                               x_dim = out_dim, 
                                               out_dim = 1,
                                               scope = "output_var",
@@ -583,9 +583,8 @@ class tsLSTM_mv():
             # ? 
             self.loss = self.neg_llk + self.regularization + self.l2*(self.regu_dense_mean + self.regu_dense_var)
         
-        elif self.loss_type == 'pseudo_lk':
-            
-            self.loss = self.pseudo_neg_llk + self.regularization + self.l2*self.regu_dense_mean
+        #elif self.loss_type == 'pseudo_lk':
+        #    self.loss = self.pseudo_neg_llk + self.regularization + self.l2*self.regu_dense_mean
             
         else:
             
