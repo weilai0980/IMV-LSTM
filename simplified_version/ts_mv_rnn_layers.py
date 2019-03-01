@@ -148,6 +148,8 @@ def dense(x, x_dim, out_dim, scope, dropout_keep_prob, max_norm_regul, activatio
         
         # dropout
         h = tf.nn.dropout(h, dropout_keep_prob)
+        
+        
         w = tf.get_variable('w', 
                             [x_dim, out_dim], 
                             dtype = tf.float32,\

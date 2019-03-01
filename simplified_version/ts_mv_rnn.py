@@ -297,7 +297,7 @@ class tsLSTM_mv():
                 if bool_regular_dropout_output == True:
                     h_mv = tf.nn.dropout(h_mv, self.keep_prob)
                 
-                # outpout layer without max-norm regularization
+                # outpout layer NO max-norm regularization
                 h_mean, self.regu_dense_mean = mv_dense(h_vari = h_mv, 
                                                         dim_vari = dim_vari, 
                                                         scope = 'output_mean', 
@@ -307,7 +307,7 @@ class tsLSTM_mv():
                                                         max_norm_regul = 0.0, 
                                                         regul_type = dense_regul_type)
                 
-                # outpout layer without max-norm regularization
+                # outpout layer NO max-norm regularization
                 h_var, self.regu_dense_var = mv_dense(h_vari = h_mv, 
                                                       dim_vari = dim_vari, 
                                                       scope = 'output_var', 
@@ -486,7 +486,9 @@ class tsLSTM_mv():
                                                      scope = 'multi_dense',
                                                      dropout_keep_prob = self.keep_prob,
                                                      max_norm_regul = max_norm)
+                
                 # ---- output layer
+                # outpout layer NO max-norm regularization
                 
                 # ? dropout
                 if bool_regular_dropout_output == True:
@@ -494,21 +496,21 @@ class tsLSTM_mv():
                 
                 # [B 1]
                 h_mean, self.regu_dense_mean = dense(x = h,
-                                                x_dim = out_dim, 
-                                                out_dim = 1,
-                                                scope = "output_mean",
-                                                dropout_keep_prob = 1.0, 
-                                                max_norm_regul = 0.0,
-                                                activation_type = "")
+                                                     x_dim = out_dim, 
+                                                     out_dim = 1,
+                                                     scope = "output_mean",
+                                                     dropout_keep_prob = 1.0, 
+                                                     max_norm_regul = 0.0,
+                                                     activation_type = "")
                 
                 # [B 1]
                 h_var, self.regu_dense_var = dense(x = h,
-                                              x_dim = out_dim, 
-                                              out_dim = 1,
-                                              scope = "output_var",
-                                              dropout_keep_prob = 1.0, 
-                                              max_norm_regul = 0.0,
-                                              activation_type = "")
+                                                   x_dim = out_dim, 
+                                                   out_dim = 1,
+                                                   scope = "output_var",
+                                                   dropout_keep_prob = 1.0, 
+                                                   max_norm_regul = 0.0,
+                                                   activation_type = "")
                 
                 # [B 1] [B 1]
                 self.py = h_mean
