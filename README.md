@@ -5,3 +5,8 @@ Guo, Tian, Tao Lin, and Nino Antulov-Fantulin. "Exploring interpretable LSTM neu
 
 Guo T, Lin T, Lu Y. An interpretable LSTM neural network for autoregressive exogenous model[J]. workshop track on ICLR, 2018.
 
+For the PyTorch implementation can be found here (credits go to KurochkinAlexey) :
+https://github.com/KurochkinAlexey/IMV_LSTM
+
+
+
