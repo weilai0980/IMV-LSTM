@@ -1,4 +1,4 @@
-# MV-LSTM
+# IMV-LSTM
 Multi-variable LSTM current neural networks for prediction and interpretation of multi-variable time series 
 
 Guo, Tian, Tao Lin, and Nino Antulov-Fantulin. "Exploring interpretable LSTM neural networks over multi-variable data." International Conference on Machine Learning (ICML). 2019.
